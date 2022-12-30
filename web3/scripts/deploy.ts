@@ -1,5 +1,4 @@
 import { ethers } from 'hardhat';
-import console from 'console';
 
 const _metadataUri = 'https://gateway.pinata.cloud/ipfs/https://gateway.pinata.cloud/ipfs/QmX2ubhtBPtYw75Wrpv6HLb1fhbJqxrnbhDo1RViW3oVoi';
 
@@ -25,3 +24,17 @@ main()
     console.error(error)
     process.exit(1)
   });
+
+
+  // async function main() {
+  //   const [admin] = await ethers.getSigners();
+
+  //   const AvaxGods = await ethers.getContractFactory("AvaxGods");
+  //   const avaxGods = await AvaxGods.deploy(_metadataUri);
+
+  //   console.log("The contract addrress is: ", { AVAXGods: avaxGods.address });
+
+  //   return avaxGods.deployed()
+  // }
+
+  // https://github.com/andrew-fleming/pmkn-farm/blob/main/scripts/deployFarm.ts
