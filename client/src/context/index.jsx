@@ -23,6 +23,16 @@ export const GlobalContextProvider = ({ children }) => {
 
     const navigate = useNavigate();
 
+    useEffect(() => {
+        const battleGroundFromLocalStorage = localStorage.getItem('battleground');
+
+        if (battleGroundFromLocalStorage) {
+            setBattleGround(battleGroundFromLocalStorage)
+        } else {
+            localStorage.setItem('battleground', battleGround);
+        }
+    }, [])
+
     //* Set the wallet address to the state
     const updateCurrentWalletAddress = async () => {
         const accounts = await window?.ethereum?.request({ method: 'eth_requestAccounts' });

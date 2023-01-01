@@ -83,7 +83,7 @@ const Battle = () => {
             </div>
           </div>
 
-          <PlayerInfo player={player1} playerIcon={player01Icon} mt />
+          <PlayerInfo player={player1} playerIcon={player01Icon} />
 
           <GameInfo />
     </div>
