@@ -8,7 +8,7 @@ import { attack, attackSound, defense, defenseSound, player01 as player01Icon, p
 import { playAudio } from '../utils/animation.js'
 
 const Battle = () => {
-    const { contract, gameData, walletAddress, showAlert, setShowAlert, battleGround } = useGlobalContext();
+    const { contract, gameData, walletAddress, showAlert, setShowAlert, battleGround, setErrorMessage } = useGlobalContext();
     const [player1, setPlayer1] = useState({});
     const [player2, setPlayer2] = useState({});
     const { battleName } = useParams();
@@ -49,7 +49,7 @@ const Battle = () => {
                 setPlayer1({ ...player01, att: p1Att, def: p1Def, health: p1H, mana: p1M });
                 setPlayer2({ ...player02, att: 'x', def: 'x', health: p2H, mana: p2M})
             } catch (error) {
-                console.log(error)
+                setErrorMessage(error)
             }
         }
 
@@ -65,7 +65,7 @@ const Battle = () => {
             setShowAlert({
                 status: true, type: 'info', message: `Initiating ${choice === 1 ? 'attack' : 'defense'}`})
         } catch (error) {
-            console.log(error)
+            setErrorMessage(error)
         }
     }
 
