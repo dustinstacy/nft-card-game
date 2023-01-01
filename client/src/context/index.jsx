@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { ABI, ADDRESS } from '../contract';
 import { createEventListeners } from "./createEventListeners";
+import { GetParams } from "../utils/onboard";
 
 const GlobalContext = createContext();
 
@@ -20,6 +21,7 @@ export const GlobalContextProvider = ({ children }) => {
     })
     const [updateGameData, setUpdateGameDate] = useState(0);
     const [battleGround, setBattleGround] = useState("bg-astral");
+    const [step, setStep] = useState(1);
 
     const navigate = useNavigate();
 
@@ -33,11 +35,23 @@ export const GlobalContextProvider = ({ children }) => {
         }
     }, [])
 
+    // //* Reset web3 onboarding modal params
+    // useEffect(() => {
+    //     const resetParams = async () => {
+    //         const currentStep = await GetParams();
+
+    //         setStep(currentStep.step)
+    //     }
+
+    //     resetParams();
+
+    //     window?.ethereum?.on('chainChanged', () => resetParams());
+    //     window?.ethereum?.on('accountsChanged', () => resetParams());
+    // }, [])
+
     //* Set the wallet address to the state
     const updateCurrentWalletAddress = async () => {
         const accounts = await window?.ethereum?.request({ method: 'eth_requestAccounts' });
-
-        console.log(accounts);
 
         if (accounts) setWalletAddress(accounts[0]);
     }
@@ -62,10 +76,13 @@ export const GlobalContextProvider = ({ children }) => {
         }
 
         setSmartContractAndProvider();
+        // const timer = setTimeout(() => setSmartContractAndProvider(), [1000]);
+
+        // return () => clearTimeout(timer);
     }, [])
 
     useEffect(() => {
-        if (contract) {
+        if (step !== -1 && contract) {
             createEventListeners({
                 navigate, contract, provider, walletAddress, setShowAlert, setUpdateGameDate
             });
