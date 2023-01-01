@@ -28,6 +28,12 @@ const Battle = () => {
                     player02Address = gameData.activeBattle.players[0];
                 }
 
+                if (gameData.activeBattle.players.includes(walletAddress)) {
+                    console.log("active battler")
+                } else {
+                    navigate('/')
+                }
+
                 const p1TokenData = await contract.getPlayerToken(player01Address);
                 const player01 = await contract.getPlayer(player01Address);
                 const p2TokenData = await contract.getPlayerToken(player02Address);
@@ -48,7 +54,7 @@ const Battle = () => {
         }
 
         if (contract && gameData.activeBattle) getPlayerInfo();
-    }, [contract, gameData, battleName])
+    }, [contract, gameData, battleName, walletAddress])
 
   return (
     <div className={`${styles.flexBetween} ${styles.gameContainer} ${battleGround}`}>
