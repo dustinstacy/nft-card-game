@@ -1,6 +1,10 @@
 import { ethers } from "ethers";
 
 import { ABI } from "../contract";
+import { playAudio, sparcle } from "../utils/animation";
+import { defenseSound } from "../assets";
+
+const emptyAccount = "0x0000000000000000000000000000000000000000";
 
 const AddNewEvent = (eventFilter, provider, cb) => {
   provider.removeListener(eventFilter); // not have multiple listeners on same event
@@ -12,6 +16,15 @@ const AddNewEvent = (eventFilter, provider, cb) => {
   });
 };
 
+const getCoords = (cardRef) => {
+  const { left, top, width, height } = cardRef.current.getBoundingClientRect();
+
+  return {
+    pageX: left + width / 2,
+    pageY: top + height / 2.25,
+  };
+};
+
 export const createEventListeners = ({
   navigate,
   contract,
@@ -19,6 +32,8 @@ export const createEventListeners = ({
   walletAddress,
   setShowAlert,
   setUpdateGameData,
+  player1Ref,
+  player2Ref,
 }) => {
   const NewPlayerEventFilter = contract.filters.NewPlayer();
   AddNewEvent(NewPlayerEventFilter, provider, ({ args }) => {
@@ -50,5 +65,37 @@ export const createEventListeners = ({
   const BattleMoveEventFilter = contract.filters.BattleMove();
   AddNewEvent(BattleMoveEventFilter, provider, ({ args }) => {
     console.log("Battle move initiated!", args);
+  });
+
+  const RoundEndedEventFilter = contract.filters.RoundEnded();
+  AddNewEvent(RoundEndedEventFilter, provider, ({ args }) => {
+    console.log("Round ended!", args, walletAddress);
+
+    for (let i = 0; i < args.damagedPlayers.length; i += 1) {
+      if (args.damagedPlayers[i] !== emptyAccount) {
+        if (args.damagedPlayers[i] === walletAddress) {
+          sparcle(getCoords(player1Ref));
+        } else if (args.damagedPlayers[i] !== walletAddress) {
+          sparcle(getCoords(player2Ref));
+        }
+      } else {
+        playAudio(defenseSound);
+      }
+    }
+
+    setUpdateGameData((prev) => prev + 1);
+  });
+
+  const BattleEndedEventFilter = contract.filters.BattleEnded();
+  AddNewEvent(BattleEndedEventFilter, provider, ({ args }) => {
+    console.log("Battle ended!", args, walletAddress);
+
+    if (walletAddress.toLowerCase() === args.winner.toLowerCase()) {
+      setShowAlert({ status: true, type: "success", message: "You won!" });
+    } else if (walletAddress.toLowerCase() === args.loser.toLowerCase()) {
+      setShowAlert({ status: true, type: "failure", message: "You lost!" });
+    }
+
+    navigate("/create-battle");
   });
 };

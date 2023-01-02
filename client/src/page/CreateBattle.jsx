@@ -11,8 +11,6 @@ const CreateBattle = () => {
   const [waitBattle, setWaitBattle] = useState(false);
   const navigate = useNavigate();
 
-  console.log(gameData);
-
   useEffect(() => {
     if (gameData?.activeBattle?.battleStatus === 1) {
       navigate(`/battle/${gameData.activeBattle.name}`)
@@ -38,16 +36,11 @@ const CreateBattle = () => {
       const playerExists = await contract.isPlayer(walletAddress);
       const playerTokenExists = await contract.isPlayerToken(walletAddress);
 
-      console.log({
-        playerExists,
-        playerTokenExists
-      })
-
       if (!playerExists && !playerTokenExists) navigate('/');
     };
 
     if (contract) createPlayerToken();
-  }, [walletAddress])
+  }, [contract, walletAddress])
 
   return (
     <>

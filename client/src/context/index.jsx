@@ -19,10 +19,13 @@ export const GlobalContextProvider = ({ children }) => {
     const [gameData, setGameData] = useState({
         players: [], pendingBattles: [], activeBattle: null
     })
-    const [updateGameData, setUpdateGameDate] = useState(0);
+    const [updateGameData, setUpdateGameData] = useState(0);
     const [battleGround, setBattleGround] = useState("bg-astral");
     const [step, setStep] = useState(1);
     const [errorMessage, setErrorMessage] = useState('');
+
+    const player1Ref = useRef();
+    const player2Ref = useRef();
 
     const navigate = useNavigate();
 
@@ -54,13 +57,13 @@ export const GlobalContextProvider = ({ children }) => {
     const updateCurrentWalletAddress = async () => {
         const accounts = await window?.ethereum?.request({ method: 'eth_requestAccounts' });
 
-        if (accounts) setWalletAddress(accounts[0]);
+      if (accounts) setWalletAddress(accounts[0]);
     }
 
     useEffect(() => {
         updateCurrentWalletAddress();
 
-        window?.ethereum?.on('accountsChanged', updateCurrentWalletAddress)
+      window?.ethereum?.on('accountsChanged', updateCurrentWalletAddress)
     }, [])
 
     //* Set the smart contract and the provider to the state
@@ -76,42 +79,40 @@ export const GlobalContextProvider = ({ children }) => {
             setContract(newContract);
         }
 
-        setSmartContractAndProvider();
-        // const timer = setTimeout(() => setSmartContractAndProvider(), [1000]);
+        const timer = setTimeout(() => setSmartContractAndProvider(), 300);
 
-        // return () => clearTimeout(timer);
+        return () => clearTimeout(timer);
     }, [])
 
     useEffect(() => {
-        if (step !== -1 && contract) {
+        if (contract) {
             createEventListeners({
-                navigate, contract, provider, walletAddress, setShowAlert, setUpdateGameDate
+                navigate, contract, provider, walletAddress, setShowAlert, setUpdateGameData, player1Ref, player2Ref
             });
-        }
-    }, [])
+      }
+    }, [contract, walletAddress])
 
         //* Set the game data to the state
-    useEffect(() => {
-        const fetchGameData = async () => {
-            const fetchedBattles = await contract.getAllBattles();
-            const pendingBattles = fetchedBattles.filter((battle) => battle.battleStatus === 0);
-            let activeBattle = null;
+  useEffect(() => {
+    const fetchGameData = async () => {
+      if (contract) {
+        const fetchedBattles = await contract.getAllBattles();
+        const pendingBattles = fetchedBattles.filter((battle) => battle.battleStatus === 0);
+        let activeBattle = null;
 
-            fetchedBattles.forEach((battle) => {
-                if (battle.players.find((player) => player.toLowerCase() === walletAddress.toLowerCase())) {
-                    if (battle.winner.startsWith('0x00')) {
-                        activeBattle = battle;
-                    }
-                }
-            })
+        fetchedBattles.forEach((battle) => {
+          if (battle.players.find((player) => player.toLowerCase() === walletAddress.toLowerCase())) {
+            if (battle.winner.startsWith('0x00')) {
+              activeBattle = battle;
+            }
+          }
+        });
 
-            setGameData({
-                pendingBattles: pendingBattles.slice(1), activeBattle
-            });
-        }
-
-        if(contract) fetchGameData();
-    }, [walletAddress, updateGameData])
+        setGameData({ pendingBattles: pendingBattles.slice(1), activeBattle });
+      }
+    };
+    fetchGameData();
+  }, [contract, updateGameData, walletAddress]);
 
     useEffect(() => {
         if (showAlert?.status) {
@@ -141,7 +142,7 @@ export const GlobalContextProvider = ({ children }) => {
     return (
         <GlobalContext.Provider value={{
             contract, walletAddress, showAlert, setShowAlert, battleName, setBattleName, gameData, battleGround, setBattleGround,
-            errorMessage, setErrorMessage
+            errorMessage, setErrorMessage, player1Ref, player2Ref
         }}>
             {children}
     </GlobalContext.Provider>
