@@ -5,7 +5,7 @@ import { PageHOC, CustomInput, CustomButton } from '../components';
 import { useNavigate } from 'react-router-dom';
 
 const Home = () => {
-  const { contract, walletAddress, setShowAlert } = useGlobalContext();
+  const { contract, walletAddress, setShowAlert, setErrorMessage } = useGlobalContext();
   const [playerName, setPlayerName] = useState('');
 
   const navigate = useNavigate();
@@ -15,7 +15,7 @@ const Home = () => {
       const playerExists = await contract.isPlayer(walletAddress);
 
       if (!playerExists) {
-        await contract.registerPlayer(playerName, playerName)
+        await contract.registerPlayer(playerName, playerName, { gasLimit: 200000})
 
         setShowAlert({
           status: true,
@@ -26,12 +26,7 @@ const Home = () => {
         setTimeout(() => navigate('/create-battle'), 6000)
       }
     } catch (error) {
-              setShowAlert({
-          status: true,
-          type: 'failure',
-          message: "Something went wrong!",
-        })
-      alert(error);
+      setErrorMessage(error);
     }
   };
 
