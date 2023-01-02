@@ -1,13 +1,11 @@
 import { ethers } from "ethers";
 
 import { ABI } from "../contract";
-import { playAudio, sparcle } from "../utils/animation";
+import { playAudio, sparcle } from "../utils/animation.js";
 import { defenseSound } from "../assets";
 
-const emptyAccount = "0x0000000000000000000000000000000000000000";
-
 const AddNewEvent = (eventFilter, provider, cb) => {
-  provider.removeListener(eventFilter); // not have multiple listeners on same event
+  provider.removeListener(eventFilter);
 
   provider.on(eventFilter, (logs) => {
     const parsedLog = new ethers.utils.Interface(ABI).parseLog(logs);
@@ -16,6 +14,7 @@ const AddNewEvent = (eventFilter, provider, cb) => {
   });
 };
 
+//* Get battle card coordinates
 const getCoords = (cardRef) => {
   const { left, top, width, height } = cardRef.current.getBoundingClientRect();
 
@@ -25,15 +24,17 @@ const getCoords = (cardRef) => {
   };
 };
 
+const emptyAccount = "0x0000000000000000000000000000000000000000";
+
 export const createEventListeners = ({
   navigate,
   contract,
   provider,
   walletAddress,
   setShowAlert,
-  setUpdateGameData,
   player1Ref,
   player2Ref,
+  setUpdateGameData,
 }) => {
   const NewPlayerEventFilter = contract.filters.NewPlayer();
   AddNewEvent(NewPlayerEventFilter, provider, ({ args }) => {
@@ -43,14 +44,14 @@ export const createEventListeners = ({
       setShowAlert({
         status: true,
         type: "success",
-        message: "Player has been successfully registered.",
+        message: "Player has been successfully registered",
       });
     }
   });
 
   const NewBattleEventFilter = contract.filters.NewBattle();
   AddNewEvent(NewBattleEventFilter, provider, ({ args }) => {
-    console.log("New battle started", args, walletAddress);
+    console.log("New battle started!", args, walletAddress);
 
     if (
       walletAddress.toLowerCase() === args.player1.toLowerCase() ||
@@ -59,7 +60,22 @@ export const createEventListeners = ({
       navigate(`/battle/${args.battleName}`);
     }
 
-    setUpdateGameData((prev) => prev + 1);
+    setUpdateGameData((prevUpdateGameData) => prevUpdateGameData + 1);
+  });
+
+  const NewGameTokenEventFilter = contract.filters.NewGameToken();
+  AddNewEvent(NewGameTokenEventFilter, provider, ({ args }) => {
+    console.log("New game token created!", args.owner);
+
+    if (walletAddress.toLowerCase() === args.owner.toLowerCase()) {
+      setShowAlert({
+        status: true,
+        type: "success",
+        message: "Player game token has been successfully generated",
+      });
+
+      navigate("/create-battle");
+    }
   });
 
   const BattleMoveEventFilter = contract.filters.BattleMove();
@@ -83,13 +99,12 @@ export const createEventListeners = ({
       }
     }
 
-    setUpdateGameData((prev) => prev + 1);
+    setUpdateGameData((prevUpdateGameData) => prevUpdateGameData + 1);
   });
 
+  // Battle Ended event listener
   const BattleEndedEventFilter = contract.filters.BattleEnded();
   AddNewEvent(BattleEndedEventFilter, provider, ({ args }) => {
-    console.log("Battle ended!", args, walletAddress);
-
     if (walletAddress.toLowerCase() === args.winner.toLowerCase()) {
       setShowAlert({ status: true, type: "success", message: "You won!" });
     } else if (walletAddress.toLowerCase() === args.loser.toLowerCase()) {
