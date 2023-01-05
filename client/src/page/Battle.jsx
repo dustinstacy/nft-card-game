@@ -28,11 +28,11 @@ const Battle = () => {
                     player02Address = gameData.activeBattle.players[0];
                 }
 
-                if (gameData.activeBattle.players.includes(walletAddress)) {
-                    console.log("active battler")
-                } else {
-                    navigate('/')
-                }
+                // if (gameData.activeBattle.players.includes(walletAddress)) {
+                //     console.log("active battler")
+                // } else {
+                //     navigate('/')
+                // }
 
                 const p1TokenData = await contract.getPlayerToken(player01Address);
                 const player01 = await contract.getPlayer(player01Address);
